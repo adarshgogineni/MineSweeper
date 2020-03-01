@@ -30,8 +30,9 @@ def buildmaze(n):
             k = k+40
         l=0
         k =40
+    #print(type(arr[0][0]))
     return win, arr
-
+"""
 val = np.array(probmatrix(n,20)).reshape((n,n))
 w , arr = buildmaze(n)
 w.setBackground('black')
@@ -42,10 +43,12 @@ for i in range(0,n):
     for j in range( 0 , n):
         #print(arr[i][j])
         if( val[i][j] == 0):
-            arr[i][j].setFill("white")
+            arr[i][j].setFill(color_rgb(40,255,40))
             arr[i][j].draw(w)
         else:
             arr[i][j].draw(w)
 #m = np.array((10,10))
+
 w.getMouse()
 w.close()
+"""
