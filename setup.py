@@ -46,7 +46,7 @@ def make2DArray(dimension,number_of_mines):
     return arr
 
 
-def setup():
+def setup(dimension,number_of_mines):
     grid = make2DArray(dimension,number_of_mines)
     for i in range(0,dimension):
         for j in range(0,dimension):
@@ -113,7 +113,7 @@ colors = { 0:[215,255,215] , 1:[95,255,95], 2:[0, 255,0] , 3:[1, 168,1], 4:[49, 
 n =15
 dimension = n
 number_of_mines = 20
-val = setup()
+val = setup(dimension,number_of_mines)
 w, gui = grid.buildmaze(n) #now that we have the base w and gui which is each boxes we can start coloring them
 gui = np.array(gui)
 gui = gui.reshape((n,n))
