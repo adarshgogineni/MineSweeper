@@ -75,6 +75,8 @@ def setup(dimension,number_of_mines):
                 down(grid,i,j)
                 bottomleft(grid,i,j)
                 bottomright(grid,i,j)
+                left(grid, i,j)
+                right(grid ,i, j)
 
             if(i == dimension-1 and j > 0 and j < dimension-1 and grid[i][j] == -1):
                 up(grid,i,j)
@@ -111,15 +113,22 @@ def setup(dimension,number_of_mines):
 
 colors = { 0:[215,255,215] , 1:[95,255,95], 2:[0, 255,0] , 3:[1, 168,1], 4:[49, 131,49],
            5:[1, 119,1], 6 :[34, 85,34], 7:[1, 65,1] , 8:[17, 58,17]}
-n =4
+n =15
 dimension = n
-number_of_mines = 2
+number_of_mines = 20
 val = setup(dimension,number_of_mines)
 w, gui = grid.buildmaze(n) #now that we have the base w and gui which is each boxes we can start coloring them
 gui = np.array(gui)
 gui = gui.reshape((n,n))
 w.setBackground('black')
 val = np.array(val)
+#val = [[0,0,0,0],
+#       [1,1,2,1],
+#       [1,-1,2,-1],
+#       [1,1,2,1]]
+
+
+print(val)
 print(val[0][0])
 for i in range(0,n):
     for j in range( 0 , n):

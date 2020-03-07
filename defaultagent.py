@@ -97,6 +97,7 @@ def mark_safe(unidf, agent_mtx , pairs ):
         pairs.remove(index)
         agent_mtx[index[0]][index[1]] = 1
 def agent_moves(ij_pairs, pairs, agent_mtx, arr,n):
+    #print(ij_pairs)
     ival = ij_pairs[0]
     jval = ij_pairs[1]
     if( arr[ival][jval] == -1): #the box is a mine
@@ -116,16 +117,19 @@ def agent_moves(ij_pairs, pairs, agent_mtx, arr,n):
     safe ,mines , unidf = sm_idf(ival , jval, agent_mtx, n)  # if you are here then it means you are not in a mine or a box with all safe neighbors but now you have to make a decision
     #now we have number of identidied safe and mines round the box
     if( arr[ival][jval] - len(mines) == len(unidf)):  # in this we are saying that if the total number of mines - the known mines = hidden then all hidden are mines
+        agent_mtx[ival][jval] = 1
         set_allmines(unidf, agent_mtx , pairs)
         return  # return because no where to go now
     totalsafe = 8-arr[ival][jval]
     if( totalsafe - len(safe) == len(unidf)):
+        agent_mtx[ival][jval]=1
         mark_safe(unidf, agent_mtx , pairs )
         random.shuffle(unidf)  # shuffles it to meake it more random
         for index in unidf:
             if( check_inpairs(index, pairs) == False):
                 continue
             else:
+                pairs.remove(index)
                 agent_moves(index, pairs, agent_mtx, arr,n)  # recorsive meathods that explores the once that are safe
     agent_mtx[ival][jval] = 1
 
@@ -142,7 +146,7 @@ def start_agent(n, arr):
         ij_pairs = pairs[ival]
         pairs.remove(ij_pairs)
         agent_moves(ij_pairs, pairs, agent_mtx, arr,n)
-        if(pairs == None): #you don't need this
-            break
+        #if(pairs == None): #you don't need this
+            #break
 
     return agent_mtx
