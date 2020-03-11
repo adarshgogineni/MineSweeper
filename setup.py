@@ -1,7 +1,9 @@
 import numpy as np
 import grid
+from Tkinter import *
 from graphics import color_rgb
 import defaultagent
+
 def left(arr,i,j):
     if(arr[i][j-1] != -1):
         arr[i][j-1] += 1
@@ -110,22 +112,21 @@ def setup(dimension,number_of_mines):
                 topright(grid,i,j)
     #print(grid)
     return grid
+'''
 
 colors = { 0:[215,255,215] , 1:[95,255,95], 2:[0, 255,0] , 3:[1, 168,1], 4:[49, 131,49],
            5:[1, 119,1], 6 :[34, 85,34], 7:[1, 65,1] , 8:[17, 58,17]}
-n =15
-dimension = n
-number_of_mines = 20
-val = setup(dimension,number_of_mines)
+
+#val = setup(dimension,number_of_mines)
 w, gui = grid.buildmaze(n) #now that we have the base w and gui which is each boxes we can start coloring them
 gui = np.array(gui)
 gui = gui.reshape((n,n))
 w.setBackground('black')
 val = np.array(val)
-#val = [[0,0,0,0],
-#       [1,1,2,1],
-#       [1,-1,2,-1],
-#       [1,1,2,1]]
+val = [[0,0,0,0],
+       [1,1,2,1],
+       [1,-1,2,-1],
+       [1,1,2,1]]
 
 
 print(val)
@@ -147,3 +148,11 @@ w.getMouse()
 w.close()
 arr = defaultagent.start_agent(n, val)
 print(arr)
+
+
+
+grid1 = setup(7,21)
+print(grid1)
+grid2 = defaultagent.start_agent(7,grid1)
+print(grid2)
+'''
