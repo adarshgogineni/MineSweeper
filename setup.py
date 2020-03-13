@@ -2,6 +2,7 @@ import numpy as np
 import grid
 from graphics import color_rgb
 import defaultagent
+import customagent
 def left(arr,i,j):
     if(arr[i][j-1] != -1):
         arr[i][j-1] += 1
@@ -115,10 +116,12 @@ colors = { 0:[215,255,215] , 1:[95,255,95], 2:[0, 255,0] , 3:[1, 168,1], 4:[49, 
            5:[1, 119,1], 6 :[34, 85,34], 7:[1, 65,1] , 8:[17, 58,17]}
 n =15
 dimension = n
-number_of_mines = 20
+number_of_mines = 30
 val = setup(dimension,number_of_mines)
 w, gui = grid.buildmaze(n) #now that we have the base w and gui which is each boxes we can start coloring them
 gui = np.array(gui)
+
+
 gui = gui.reshape((n,n))
 w.setBackground('black')
 val = np.array(val)
@@ -145,5 +148,5 @@ for i in range(0,n):
 #m = np.array((10,10))
 w.getMouse()
 w.close()
-arr = defaultagent.start_agent(n, val)
+arr = customagent.start_agent(n, val)
 print(arr)
