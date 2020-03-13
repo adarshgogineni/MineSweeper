@@ -66,7 +66,7 @@ def check_ifcom( bboxi, bboxj, org_arr): #just like the name check the common an
             return True , [a[0] , b[0]] #reuturn the True and the neghbors
     return False , None
 def smartpick( disc_box , arr , org_arr,n , agent_mtx):
-    print("<------now doing smart pick---------->")
+    #print("<------now doing smart pick---------->")
     bbox_rank = [] #this is another system that i implemented if we are at a position that we need to do it random. it's similar to probability but a lot less gurenteed
     bbox = get_box(disc_box, arr,n , bbox_rank, org_arr)
     safe_picks =[]

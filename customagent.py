@@ -143,15 +143,15 @@ def mark_mine(def_mine, agent_mtx , disc_box , pairs , org_arr, arr):
         if( arr[mine[0]][mine[1]] == -1):
             print("<-----found mine using smart pick--------->")
             print(mine)
+            agent_mtx[mine[0]][mine[1]] = -1
+            org_arr[mine[0]][mine[1]]= -1
+            if( mine not in disc_box):
+                disc_box.append(mine)
+            pairs.remove(mine)
         else:
             print("<-----False alarm--------->")
             continue
         #print(mine)
-        agent_mtx[mine[0]][mine[1]] = -1
-        org_arr[mine[0]][mine[1]]= -1
-        if( mine not in disc_box):
-            disc_box.append(mine)
-        pairs.remove(mine)
 
 
 def agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box , org_arr):
