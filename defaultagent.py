@@ -175,7 +175,7 @@ def start_agent(n, arr):
         disc_box.append(ij_pairs)
         agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box)
         for box in disc_box:
-            agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box)
+            agent_moves(box, pairs, agent_mtx, arr,n, disc_box)
         newmatrix = agent_mtx
 
 
@@ -215,5 +215,5 @@ def start_agent(n, arr):
         #matrixgui.matrix_gui(n,newmatrix)
         #if(pairs == None): #you don't need this
             #break
-
+    print(agent_mtx)
     return agent_mtx
