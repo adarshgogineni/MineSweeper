@@ -54,7 +54,7 @@ def downright(ival, jval, n):
     if( down(ival,jval,n) != None and right(ival,jval,n) != None):
         return[ival+1, jval+1]
     return None
-def mark_allsafe(ival,jval,agent_mtx, n,pairs):
+def mark_allsafe(ival,jval,agent_mtx, n, disc_box,pairs):
     x = opennegb.getneg(ival, jval,n)
     for index in x:
         i = index[0]
@@ -62,6 +62,8 @@ def mark_allsafe(ival,jval,agent_mtx, n,pairs):
         if( check_inpairs(index, pairs) == False):
             continue
         pairs.remove(index)
+        if( index not in disc_box):
+            disc_box.append(index)
         #agent_mtx[i][j] = 1
         agent_mtx[i][j] = 9
     return x
@@ -79,12 +81,14 @@ def sm_idf(ival, jval , agent_mtx ,n):
             unidf.append(index)
     return safe , mine , unidf
 
-def set_allmines(unidf, agent_mtx , pairs):
+def set_allmines(unidf, agent_mtx , pairs, disc_box):
     for index in unidf:
         if (check_inpairs(index, pairs) == False):
             continue
         agent_mtx[index[0]][index[1]] = -1
         pairs.remove(index)  #removing the identified box
+        if( index not in disc_box):
+            disc_box.append(index)
 def check_inpairs(index, pairs):
     if( len(pairs) ==0):
         return False
@@ -93,29 +97,38 @@ def check_inpairs(index, pairs):
             return True
 
     return False
-def mark_safe(unidf, agent_mtx , pairs ):
+def mark_safe(unidf, agent_mtx , pairs, disc_box ):
     for index in unidf:
         if ( check_inpairs(index, pairs) == False ):
             continue
         pairs.remove(index)
+        if(index not in disc_box):
+            disc_box.append(index)
         #agent_mtx[index[0]][index[1]] = 1
         agent_mtx[index[0]][index[1]] = 9
-def agent_moves(ij_pairs, pairs, agent_mtx, arr,n):
+def agent_moves(ij_pairs, pairs, agent_mtx, arr,n,  disc_box):
     #print(ij_pairs)
+    if(check_inpairs(ij_pairs, pairs) == True):
+        pairs.remove(ij_pairs)
     ival = ij_pairs[0]
     jval = ij_pairs[1]
     if( arr[ival][jval] == -1): #the box is a mine
-        agent_mtx[ival][jval] = -1
+        if (agent_mtx[ival][jval] != -1):
+            print("<------Steped on a mine------>")
+            agent_mtx[ival][jval] = -1
+            #update_org(ij_pairs, org_arr, n)
+            return
         return
     if(arr[ival][jval] == 0): #the box has no neightbors that are mines
         #agent_mtx[ival][jval] = 1
         agent_mtx[ival][jval] = 9
-        x = mark_allsafe(ival,jval,agent_mtx,n , pairs)
+
+        x = mark_allsafe(ival,jval,agent_mtx,n , disc_box, pairs)
         for index in x: #keep exploring
             if( check_inpairs(index, pairs) == False):
                 continue
             else:
-                agent_moves(index, pairs, agent_mtx, arr,n)
+                agent_moves(index, pairs, agent_mtx , arr,n, disc_box)
         return
 
 
@@ -124,26 +137,32 @@ def agent_moves(ij_pairs, pairs, agent_mtx, arr,n):
     if( arr[ival][jval] - len(mines) == len(unidf)):  # in this we are saying that if the total number of mines - the known mines = hidden then all hidden are mines
         #agent_mtx[ival][jval] = 1
         agent_mtx[ival][jval] = 9
-        set_allmines(unidf, agent_mtx , pairs)
+        if( len(unidf) > 0):
+            print("<-------found mines------>")
+            print(unidf)
+        set_allmines(unidf, agent_mtx , pairs, disc_box)
         return  # return because no where to go now
     totalsafe = 8-arr[ival][jval]
     if( totalsafe - len(safe) == len(unidf)):
         #agent_mtx[ival][jval]=1
         agent_mtx[ival][jval]=9
-        mark_safe(unidf, agent_mtx , pairs )
+        mark_safe(unidf, agent_mtx , pairs, disc_box )
         random.shuffle(unidf)  # shuffles it to meake it more random
         for index in unidf:
             if( check_inpairs(index, pairs) == False):
                 continue
             else:
                 pairs.remove(index)
-                agent_moves(index, pairs, agent_mtx, arr,n)  # recorsive meathods that explores the once that are safe
+                if(index not in disc_box):
+                    disc_box.append(index)
+                agent_moves(index, pairs, agent_mtx, arr,n, disc_box)  # recorsive meathods that explores the once that are safe
     #agent_mtx[ival][jval] = 1
     agent_mtx[ival][jval] = 9
 
 
 def start_agent(n, arr):
     pairs = []
+    disc_box = []
     for i in range(0,n):
         for j in range(0,n):
             pairs.append((i,j))
@@ -153,7 +172,10 @@ def start_agent(n, arr):
         ival = random.randint(0,len(pairs))-1
         ij_pairs = pairs[ival]
         pairs.remove(ij_pairs)
-        agent_moves(ij_pairs, pairs, agent_mtx, arr,n)
+        disc_box.append(ij_pairs)
+        agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box)
+        for box in disc_box:
+            agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box)
         newmatrix = agent_mtx
 
 
