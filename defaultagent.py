@@ -3,6 +3,7 @@ from graphics import *
 import random
 import opennegb
 import grid
+
 """
 class box:
     def __init__(self,state,neg_mine):
