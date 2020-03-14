@@ -3,6 +3,7 @@ import grid
 from Tkinter import *
 from graphics import color_rgb
 import defaultagent
+import customagent
 
 def left(arr,i,j):
     if(arr[i][j-1] != -1):
