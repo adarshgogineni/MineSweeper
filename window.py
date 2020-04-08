@@ -1,6 +1,6 @@
 import numpy as np
 import grid
-from Tkinter import *
+from tkinter import *
 from graphics import color_rgb
 import setup
 import defaultagent
