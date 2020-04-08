@@ -65,6 +65,50 @@ def check_ifcom( bboxi, bboxj, org_arr): #just like the name check the common an
 
             return True , [a[0] , b[0]] #reuturn the True and the neghbors
     return False , None
+class equ_help:
+    """docstring for ."""
+
+    def __init__(self, box, parent):
+        self.ind = box
+        self.par = [parent]
+
+
+def load_neg(ret,neg, parent):
+    rettmp =[]
+    for box in ret:
+        if(box.ind == neg):
+            box.par.append(parent.box)
+            return
+        rettmp.append(box)
+    ret.append(equ_help(neg,parent.box))
+    return #rettmp
+
+
+def group_allbox(bbox, org_arr, n):
+    ret = []
+    #ret = ret.reshape((n,n))
+    #for i in range(0,n):
+    #    for j in range(0,n):
+    #        ret[i][j] = []
+    m =1
+    #print(len(bbox))
+    for box in bbox:
+        if(org_arr[box.box[0]][box.box[1]] == -1):
+            continue
+        a = undesc_neg(box, org_arr)
+        #print(a)
+        if( len(a) ==0):
+            continue
+
+        for neg in a:
+            #print(m)
+            #print(neg)
+            load_neg(ret, neg, box)
+            #ret[neg[0]][neg[1]].append(box.box)
+        #if(len(a) == 0):
+        #    continue
+        m +=1
+    return ret
 def smartpick( disc_box , arr , org_arr,n , agent_mtx):
     print("<------now doing smart pick---------->")
     bbox_rank = [] #this is another system that i implemented if we are at a position that we need to do it random. it's similar to probability but a lot less gurenteed
@@ -76,12 +120,22 @@ def smartpick( disc_box , arr , org_arr,n , agent_mtx):
         safe ,mines , unidf = customagent.sm_idf(boxes.box[0], boxes.box[1], agent_mtx, n)
         val = org_arr[boxes.box[0]][boxes.box[1]] - len(mines)
         boxes.val = val
+
+    group = group_allbox(bbox,org_arr,n)
+    for b in group:
+        print("<----the box is----->")
+        print(b.ind)
+        print("<---the parent is----->")
+        print(b.par)
+    #print(group)
     for i in range(0,len(bbox)):
+        #print(bbox[i].ngb_box) #this prints out the each discovered box's neighbors
         for j in range(0,len(bbox)):
             if( i==j or bbox[i].val == -1 or bbox[j].val == -1 ):
                 continue
             if( (bbox[i].box,bbox[j].box) in checked or (bbox[j].box,bbox[i].box) in checked ):
                 continue
+
             com,get_neg = check_ifcom( bbox[i], bbox[j] , org_arr)
             checked.append((bbox[i].box,bbox[j].box))
             if( com == True):
