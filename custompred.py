@@ -109,6 +109,29 @@ def group_allbox(bbox, org_arr, n):
         #    continue
         m +=1
     return ret
+
+def group_tog(group):
+    retlist = []
+    parents = []
+    for box0 in group:
+        if box0.par in parents:
+            continue
+        temp =None
+        for box1 in group:
+            if(box0 == box1):
+                continue
+            if(box0.par == box1.par):
+                if(temp == None):
+                    temp = [[box0.ind , box1.ind], box0.par]
+                    parents.append(box0.par)
+                else:
+                    temp[0].append(box1.ind)
+        if( temp == None):
+            temp = [[box0.ind], box0.par]
+
+        retlist.append(temp)
+    return retlist
+
 def smartpick( disc_box , arr , org_arr,n , agent_mtx):
     print("<------now doing smart pick---------->")
     bbox_rank = [] #this is another system that i implemented if we are at a position that we need to do it random. it's similar to probability but a lot less gurenteed
@@ -122,11 +145,8 @@ def smartpick( disc_box , arr , org_arr,n , agent_mtx):
         boxes.val = val
 
     group = group_allbox(bbox,org_arr,n)
-    for b in group:
-        print("<----the box is----->")
-        print(b.ind)
-        print("<---the parent is----->")
-        print(b.par)
+    comp_box = group_tog(group)
+    print(comp_box)
     #print(group)
     for i in range(0,len(bbox)):
         #print(bbox[i].ngb_box) #this prints out the each discovered box's neighbors
