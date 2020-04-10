@@ -7,6 +7,9 @@ class disc_n:
         self.ngb_box = ngb_box
         self.val = 0
 
+#class equ_box:
+#    def __init__(self, boxes , parbox):
+
 def get_rank( neg , org_arr):
     sum = 0
     for n in neg:
@@ -14,7 +17,8 @@ def get_rank( neg , org_arr):
             continue
         sum += org_arr[n[0]][n[1]]
     return sum
-def border_ornot(negh , nx , arr, bbox_rank, org_arr , trv):
+
+def border_ornot(negh , nx , bbox_rank, org_arr , trv):
     x =0
     for n1 in negh:
         if( org_arr[n1[0]][n1[1]] ==-2):
@@ -30,12 +34,12 @@ def border_ornot(negh , nx , arr, bbox_rank, org_arr , trv):
         return True
     return False
 
-def get_box(disc_box, arr,n , bbox_rank, org_arr):
+def get_box(disc_box,n , bbox_rank, org_arr):
     disc_boxes =[]
     trv = []
     for box in disc_box:
         negh = opennegb.getneg(box[0], box[1] , n) #return all neghbors of a box
-        if( border_ornot( negh , n, arr , bbox_rank , org_arr, trv)  == True ): #checks any of the neghbors are not discovered so that means if the box is a border
+        if( border_ornot( negh , n , bbox_rank , org_arr, trv)  == True ): #checks any of the neghbors are not discovered so that means if the box is a border
             disc_boxes.append( disc_n( box ,negh ))
     return disc_boxes
 def undesc_neg(bbox , org_arr):
@@ -69,14 +73,23 @@ class equ_help:
     """docstring for ."""
 
     def __init__(self, box, parent):
-        self.ind = box
+        self.ind = [box]
         self.par = [parent]
+    #def min_max(min_val , max_val):
+        self.min = 0
+        self.max =  -1
+        self.val = -1
+    #def update_parval(org_arr):
+
+
+
+
 
 
 def load_neg(ret,neg, parent):
     rettmp =[]
     for box in ret:
-        if(box.ind == neg):
+        if(box.ind[0] == neg):
             box.par.append(parent.box)
             return
         rettmp.append(box)
@@ -86,10 +99,6 @@ def load_neg(ret,neg, parent):
 
 def group_allbox(bbox, org_arr, n):
     ret = []
-    #ret = ret.reshape((n,n))
-    #for i in range(0,n):
-    #    for j in range(0,n):
-    #        ret[i][j] = []
     m =1
     #print(len(bbox))
     for box in bbox:
@@ -116,26 +125,130 @@ def group_tog(group):
     for box0 in group:
         if box0.par in parents:
             continue
-        temp =None
+        #temp =None
         for box1 in group:
             if(box0 == box1):
                 continue
             if(box0.par == box1.par):
-                if(temp == None):
-                    temp = [[box0.ind , box1.ind], box0.par]
-                    parents.append(box0.par)
-                else:
-                    temp[0].append(box1.ind)
-        if( temp == None):
-            temp = [[box0.ind], box0.par]
+                #if(temp == None):
+                for i in range(0,len(box1.ind)):
+                    box0.ind.append(box1.ind[i])
+                parents.append(box0.par)
+                #else:
+                    #temp[0].append(box1.ind)
+        #if( temp == None):
+            #temp = [[box0.ind], box0.par]
 
-        retlist.append(temp)
+
+        retlist.append(box0)
     return retlist
+def setmin_max(comp_box, org_arr0):
+    for box in comp_box:
+        #if( len(box) == 1):
+        #    box.min = 1
+        #    box.max = 1
+        #    continue
+        parents = box.par
+        m =-1
+        max = -1
 
-def smartpick( disc_box , arr , org_arr,n , agent_mtx):
+        for parent in parents:
+            if( m == -1):
+                max = org_arr0[parent[0]][parent[1]]
+                m = max
+                continue
+            if(org_arr0[parent[0]][parent[1]] < m ):
+                m = org_arr0[parent[0]][parent[1]]
+        box.min = 0 #the values that his box has to have
+        print("<-----box length is----->")
+        print(len(box.ind))
+        print("<------min value is------>")
+        print(m)
+        #temp = len(box.ind)
+        box.max = min(m,len(box.ind))
+def check_sat(comp_box, org_arr0): #this basically checks if all the undiscovered neightbors have min values that can setisfy the question
+    min = -1
+    for box in comp_box:
+        for parent in box.par:
+            if(min = -1):
+                min = org_arr0[parent[0]][parent[1]]
+            elif(org_arr0[parent[0]][parent[1]]<min)
+                min = org_arr0[parent[0]][parent[1]]
+        if(box.max < min):
+            return False
+        min = -1
+    return True
+
+def prob_generator(comp_box, org_arr0 , com_set):
+
+
+    i = 0
+    val = 0
+    val1 =0
+    j =0
+    org_temp = org_arr0.copy()
+    while(i < len(comp_box) or comp_box[i].val <= comp_box[i].max):
+        comp_box[i].val = val
+        for parents in comp_box[i].par:
+            org_arr0[parents[0]][parents[1]] -=val
+
+        #now first update the max
+        setmin_max(comp_box, org_arr0)
+
+        if(check_sat(comp_box, org_arr0) == False):
+            for parents in comp_box[i].par: #resetting if does not setisfy
+                org_arr0[parents[0]][parents[1]] +=val #reset all the parents values
+                if( comp_box[i].val == comp_box[i].max):
+                    i+=1
+                    val=0
+                    continue
+                val +=1
+            continue
+
+        val1 =0
+        while(j <len(comp_box) or comp_box[j].val < comp_box[j].max):
+            if (i==j):
+                j+=1
+                continue
+            comp_box[j].val = val1
+
+            for parents in comp_box[j].par:
+                org_arr0[parents[0]][parents[1]] -=val1
+            setmin_max(comp_box, org_arr0)
+            if(check_sat(comp_box, org_arr0) == False):
+                for parents in comp_box[j].par: #resetting if does not setisfy
+                    org_arr0[parents[0]][parents[1]] +=val1 #reset all the parents values
+                    if( comp_box[i].val == comp_box[i].max):
+                        i+=1
+                        val=0
+                        continue
+                    val +=1
+                continue
+            else:
+                if(j == len(comp_box)-1): #we only check if it's the last box because we don't care about all possible testing
+                    #combination solved
+                    temp= []
+                    for i in range(0, len(comp_box)):  #this part is used to save the solved configuration
+                        temp.append(comp_box[i].val)
+                    com_set.append(temp)
+
+        i+=1
+        org_arr0 = org_temp.copy()
+
+
+
+
+
+
+
+
+def smartpick( disc_box , org_arr,n , agent_mtx): #org_arr is treated as a global discovered value by opening a box
     print("<------now doing smart pick---------->")
+    print(org_arr)
+    org_arr0 = org_arr.copy() #this is used to copy or als reset a matrix
+    #print(type(org_arr0))
     bbox_rank = [] #this is another system that i implemented if we are at a position that we need to do it random. it's similar to probability but a lot less gurenteed
-    bbox = get_box(disc_box, arr,n , bbox_rank, org_arr)
+    bbox = get_box(disc_box,n , bbox_rank, org_arr)
     safe_picks =[]
     def_mine=[]
     checked = []
@@ -144,9 +257,26 @@ def smartpick( disc_box , arr , org_arr,n , agent_mtx):
         val = org_arr[boxes.box[0]][boxes.box[1]] - len(mines)
         boxes.val = val
 
-    group = group_allbox(bbox,org_arr,n)
-    comp_box = group_tog(group)
-    print(comp_box)
+    group = group_allbox(bbox,org_arr,n) #this makes a list a class of undiscovered box and the discovered neightbors
+
+    comp_box = group_tog(group) #this makes a list of  class of boxes that have same discovered parents
+    setmin_max(comp_box, org_arr0)#this sets min and max for all the groups
+    #now this is where the fun stuff happens
+    com_set = []
+    prob_generator(comp_box, org_arr0, com_set)
+
+    #so now that we have neighbors in a group we can think about setting up system of quation
+    """
+    for box in comp_box:
+        print("<----the boxes are------->")
+        print(box.ind)
+        print("<----the parents are----->")
+        print(box.par)
+        print("<------min is------->")
+        print(box.min)
+        print("<------max is-------->")
+        print(box.max)
+        """
     #print(group)
     for i in range(0,len(bbox)):
         #print(bbox[i].ngb_box) #this prints out the each discovered box's neighbors

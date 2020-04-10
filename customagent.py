@@ -220,10 +220,10 @@ def start_agent(n, arr):
         pairs.remove(ij_pairs)
         disc_box.append(ij_pairs)
         agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box, org_arr)
-        org_arr = org_arr
+        #org_arr = org_arr
         for box in disc_box:
             agent_moves(box, pairs, agent_mtx, arr, n, disc_box, org_arr)
-        safe_picks , def_mine , bbox_rank = custompred.smartpick(disc_box, arr, org_arr,n  , agent_mtx) #this returns safe pick and def mine
+        safe_picks , def_mine , bbox_rank = custompred.smartpick(disc_box, org_arr,n  , agent_mtx) #this returns safe pick and def mine
         #print("safe_pics")
         #print(safe_picks)
         #print("agent arr is")
