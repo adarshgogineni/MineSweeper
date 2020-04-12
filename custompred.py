@@ -1,6 +1,9 @@
 import numpy as np
 import opennegb
 import customagent
+import scipy
+from scipy.special import comb
+#from math import comb
 class disc_n:
     def __init__(self,index , ngb_box):
         self.box = index
@@ -79,6 +82,7 @@ class equ_help:
         self.min = 0
         self.max =  -1
         self.val = -1
+        self.prob = -1
     #def update_parval(org_arr):
 
 
@@ -142,6 +146,12 @@ def group_tog(group):
 
         retlist.append(box0)
     return retlist
+def remove_duplicate(comp_set):
+    temp =[]
+    for ind in comp_set:
+        if ind not in temp:
+            temp.append(ind)
+    return temp
 def setmin_max(comp_box, org_arr0):
     for box in comp_box:
         #if( len(box) == 1):
@@ -156,38 +166,109 @@ def setmin_max(comp_box, org_arr0):
             if( m == -1):
                 max = org_arr0[parent[0]][parent[1]]
                 m = max
-                continue
+                #continue
             if(org_arr0[parent[0]][parent[1]] < m ):
                 m = org_arr0[parent[0]][parent[1]]
         box.min = 0 #the values that his box has to have
-        print("<-----box length is----->")
-        print(len(box.ind))
-        print("<------min value is------>")
-        print(m)
+        #print("<-----box length is----->")
+        #print(len(comp_box))
+        #print(len(box.ind))
+        #print("<------min value is------>")
+        #print(m)
         #temp = len(box.ind)
         box.max = min(m,len(box.ind))
-def check_sat(comp_box, org_arr0): #this basically checks if all the undiscovered neightbors have min values that can setisfy the question
+def get_minval(box, comp_box, org_arr0):
+    parents = box.par
+
+    tempval = box.val
+    minval = -1
+    flag = 0
+    minflag = 0
+    par = None
+    for p in parents:
+        for boxes in comp_box:
+            if(boxes == box):
+                continue
+            if(p in boxes.par):
+                if( boxes.val == -1):
+                    tempval += boxes.max
+                    flag = 1
+                else:
+                    tempval += boxes.val
+        #if(tempval < org_arr0[p[0]][p[1]]):
+        #    tempval = org_arr0[p[0]][p[1]] - tempval
+        if( minval == -1):
+            minval = tempval
+            par = p
+            minflag = flag
+            flag = 0
+        elif(minval > tempval):
+            minval = tempval
+            par =p
+            minflag = flag
+            flag = 0
+        tempval = box.val #for each parent we are only doing it one time
+    if(minval == -1):
+        print("<-----there is a problem geting minval")
+    return minval , par , minflag
+
+
+
+
+def check_sat(box , comp_box, org_arr0): #this basically checks if all the undiscovered neightbors have min values that can setisfy the question
+    """
     min = -1
     for box in comp_box:
         for parent in box.par:
-            if(min = -1):
+            if(min == -1):
                 min = org_arr0[parent[0]][parent[1]]
-            elif(org_arr0[parent[0]][parent[1]]<min)
+            elif(org_arr0[parent[0]][parent[1]]<min):
                 min = org_arr0[parent[0]][parent[1]]
         if(box.max < min):
             return False
         min = -1
     return True
 
+    for box in comp_box:
+        val = box.val
+        if(val == -1):
+            continue
+        #if(box.val > box.max): #this is checking if the values is checking if the value of the box is below the max values
+        #    return False
+    """
+    value , par , flag = get_minval(box, comp_box, org_arr0)
+    value = org_arr0[par[0]][par[1]] - abs(value)
+    if( box.val < value and flag == 1):
+        return False
+    if( flag == 0 and value != 0):
+        return False
+    return True
+
+def all_set(comp_box, org_arr0):
+
+    for box in comp_box:
+        parents = box.par
+        for parent in parents:
+            if(org_arr0[parent[0]][parent[1]] > 0):
+                return False
+    return True
+def reset_val(comp_box):
+    for box in comp_box:
+        box.val = -1
 def prob_generator(comp_box, org_arr0 , com_set):
 
 
     i = 0
     val = 0
-    val1 =0
     j =0
-    org_temp = org_arr0.copy()
-    while(i < len(comp_box) or comp_box[i].val <= comp_box[i].max):
+    #org_temp = org_arr0.copy()
+    org_temp = np.empty_like(org_arr0)
+    org_temp[:] = org_arr0
+    while(i < len(comp_box)): #the one thing that we need to do is check is
+        if( val > comp_box[i].max):
+            i+=1
+            val=0
+            continue
         comp_box[i].val = val
         for parents in comp_box[i].par:
             org_arr0[parents[0]][parents[1]] -=val
@@ -195,46 +276,104 @@ def prob_generator(comp_box, org_arr0 , com_set):
         #now first update the max
         setmin_max(comp_box, org_arr0)
 
-        if(check_sat(comp_box, org_arr0) == False):
+        if(check_sat(comp_box[i], comp_box, org_temp) == False):
             for parents in comp_box[i].par: #resetting if does not setisfy
                 org_arr0[parents[0]][parents[1]] +=val #reset all the parents values
-                if( comp_box[i].val == comp_box[i].max):
-                    i+=1
-                    val=0
-                    continue
-                val +=1
+            setmin_max(comp_box, org_arr0)
+            if( comp_box[i].val == comp_box[i].max):
+                i+=1
+                val=0
+                continue
+            val +=1
             continue
+        #for parents in comp_box[i].par:
+        #    org_arr0[parents[0]][parents[1]] -=val
 
+        #now first update the max
+        #setmin_max(comp_box, org_arr0)
         val1 =0
-        while(j <len(comp_box) or comp_box[j].val < comp_box[j].max):
-            if (i==j):
+        while(j <len(comp_box)):
+            if (i==j and j == len(comp_box)-1 and all_set(comp_box, org_arr0) == True):
+                temp = []
+                for y in range(0, len(comp_box)):  # this part is used to save the solved configuration
+                    temp.append(comp_box[y].val)
+                com_set.append(temp)
+                break
+            elif(i==j and j!= len(comp_box)-1):
+
                 j+=1
                 continue
+            #if( j == len(comp_box)-1):
+            #    break
             comp_box[j].val = val1
 
             for parents in comp_box[j].par:
                 org_arr0[parents[0]][parents[1]] -=val1
             setmin_max(comp_box, org_arr0)
-            if(check_sat(comp_box, org_arr0) == False):
+
+            add_check = 0
+            pm = None
+            for p in comp_box[j].par:
+                if( org_arr0[p[0]][p[1]] <0):
+                    add_check=1
+                    pm = p
+
+            if(add_check == 1 ):
+            #    print("<-----value problem--->")
+            #    print(comp_box[j].ind)
+            #    print(comp_box[j].val)
+            #    print("<---the parent is----->")
+            #    print(pm)
                 for parents in comp_box[j].par: #resetting if does not setisfy
                     org_arr0[parents[0]][parents[1]] +=val1 #reset all the parents values
-                    if( comp_box[i].val == comp_box[i].max):
-                        i+=1
-                        val=0
-                        continue
-                    val +=1
+                if (comp_box[j].val > comp_box[j].max):
+                    j += 1
+                    val1 = 0
+                    continue
+                val1 += 1
+                # j+=1
+                continue
+            if(check_sat(comp_box[j],comp_box, org_temp) == False ):
+                for parents in comp_box[j].par: #resetting if does not setisfy
+                    org_arr0[parents[0]][parents[1]] +=val1 #reset all the parents values
+                setmin_max(comp_box, org_arr0)
+                if( comp_box[j].val > comp_box[j].max):
+                    j+=1
+                    val1=0
+                    continue
+                val1 +=1
+                #j+=1
                 continue
             else:
-                if(j == len(comp_box)-1): #we only check if it's the last box because we don't care about all possible testing
+                #for parents in comp_box[j].par:
+                #   org_arr0[parents[0]][parents[1]] -= val1
+
+                # now first update the max
+                #setmin_max(comp_box, org_arr0)
+
+                if(j == len(comp_box)-1 and all_set(comp_box, org_arr0) == True): #we only check if it's the last box because we don't care about all possible testing
                     #combination solved
                     temp= []
-                    for i in range(0, len(comp_box)):  #this part is used to save the solved configuration
-                        temp.append(comp_box[i].val)
+                    for x in range(0, len(comp_box)):  #this part is used to save the solved configuration
+                        temp.append(comp_box[x].val)
                     com_set.append(temp)
+                    j+=1
+                else:
+                    j+=1
+                    val1=0
 
-        i+=1
-        org_arr0 = org_temp.copy()
-
+        #i+=1
+        j=0
+        #val =0
+        reset_val(comp_box)
+        org_arr0 = np.empty_like(org_temp)
+        org_arr0[:] = org_temp
+        setmin_max(comp_box, org_arr0)
+        if( val == comp_box[i].max):
+            i+=1
+            val =0
+        else:
+            val+=1
 
 
 
@@ -264,7 +403,44 @@ def smartpick( disc_box , org_arr,n , agent_mtx): #org_arr is treated as a globa
     #now this is where the fun stuff happens
     com_set = []
     prob_generator(comp_box, org_arr0, com_set)
+    com_set = remove_duplicate(com_set)
+    num_comb = 0
+    for set in com_set:
+        temp = 1
+        for i in range(0,len(set)):
+            temp = temp*comb(len(comp_box[i].ind), set[i])
+        for j in range( 0 ,len(set)):
+            comp_box[j].prob += (set[i]/len(comp_box[j].ind)) *temp
+        num_comb += temp
+    if(num_comb == 0):
+        print("error")
+        return [] , [] ,[]
+    min_prob = None
+    for box in comp_box:
+        box.prob = box.prob/num_comb
+        if( min_prob == None):
+            min_prob= box
+        if( box.prob < min_prob.prob):
+            min_prob = box
+    if(min_prob != None):
+        print("<----Next safest move is----->")
+        print(min_prob.ind)
+    return min_prob.ind, [] , []
+    #print("<----the set obtained--->")
+    #print(com_set)
+    #print("<------num possivle combination---->")
+    #print(num_comb)
 
+
+
+
+    #print("<-----possible sets found-------->")
+    #print(len(com_set))
+    #print("<-----sets are--------->")
+    #for box in comp_box:
+    #    print(box.ind)
+    #    print("<---next--->")
+    #print(com_set)
     #so now that we have neighbors in a group we can think about setting up system of quation
     """
     for box in comp_box:

@@ -221,6 +221,8 @@ def start_agent(n, arr):
         disc_box.append(ij_pairs)
         agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box, org_arr)
         #org_arr = org_arr
+        print("<---the answer is----->")
+        print(arr)
         for box in disc_box:
             agent_moves(box, pairs, agent_mtx, arr, n, disc_box, org_arr)
         safe_picks , def_mine , bbox_rank = custompred.smartpick(disc_box, org_arr,n  , agent_mtx) #this returns safe pick and def mine
@@ -242,6 +244,9 @@ def start_agent(n, arr):
 
             ival = random.randint(0,len(pairs))-1#pairs.index(ij_pairs)
             continue
+        else:
+            print("<-----found safe pic-------->")
+            ival = safe_picks[0]
 
         ival  = pairs.index(safe_picks[0]) #we can optimize this by treversing over all the safe picks but we are onlt picking one in the safe picks
 
