@@ -114,9 +114,9 @@ def setup(dimension,number_of_mines):
 
 colors = { 0:[215,255,215] , 1:[95,255,95], 2:[0, 255,0] , 3:[1, 168,1], 4:[49, 131,49],
            5:[1, 119,1], 6 :[34, 85,34], 7:[1, 65,1] , 8:[17, 58,17]}
-n =15
+n =4
 dimension = n
-number_of_mines = 30
+number_of_mines = 2
 val = setup(dimension,number_of_mines)
 w, gui = grid.buildmaze(n) #now that we have the base w and gui which is each boxes we can start coloring them
 gui = np.array(gui)

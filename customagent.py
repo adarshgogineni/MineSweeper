@@ -4,7 +4,7 @@ import random
 import opennegb
 import custompred
 import grid
-
+import mtxprob
 colors = { -1:[0,0,0], 0:[215,255,215] , 1:[135, 206, 235], 2:[0, 128, 0] , 3:[255, 0, 0], 4:[128, 0, 128],
            5:[128, 0, 0], 6 :[64, 224, 208], 7:[255, 192, 203] , 8:[128, 128, 128], 9:[255,255,255]}
 list = []
@@ -220,10 +220,15 @@ def start_agent(n, arr):
         pairs.remove(ij_pairs)
         disc_box.append(ij_pairs)
         agent_moves(ij_pairs, pairs, agent_mtx, arr,n, disc_box, org_arr)
-        org_arr = org_arr
+        #org_arr = org_arr
+        #print("<---the answer is----->")
+        #print(arr)
         for box in disc_box:
             agent_moves(box, pairs, agent_mtx, arr, n, disc_box, org_arr)
-        safe_picks , def_mine , bbox_rank = custompred.smartpick(disc_box, arr, org_arr,n  , agent_mtx) #this returns safe pick and def mine
+        if( len(disc_box) < (n*n)-1):
+            safe_picks , def_mine , bbox_rank = custompred.smartpick(disc_box, org_arr,n  , agent_mtx) #this returns safe pick and def mine
+        else:
+            return
         #print("safe_pics")
         #print(safe_picks)
         #print("agent arr is")
@@ -236,8 +241,15 @@ def start_agent(n, arr):
 
         if(len(safe_picks) == 0):
         #    ij_pairs = get_smallest(bbox_rank)
+            #this is where you implement the probability
+            #mtxprob.probmatx(disc_box, arr, org_arr,n  , agent_mtx)
+            print("<-----------------no safe pics-------------------->")
+
             ival = random.randint(0,len(pairs))-1#pairs.index(ij_pairs)
             continue
+        else:
+            print("<-----found safe pic-------->")
+            ival = safe_picks[0]
 
         ival  = pairs.index(safe_picks[0]) #we can optimize this by treversing over all the safe picks but we are onlt picking one in the safe picks
 
