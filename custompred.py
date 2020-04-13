@@ -423,9 +423,9 @@ def smartpick( disc_box , org_arr,n , agent_mtx): #org_arr is treated as a globa
         if( box.prob < min_prob.prob):
             min_prob = box
     if(min_prob != None):
-        print("<----Next safest move is----->")
-        print(min_prob.ind)
-    return min_prob.ind, [] , []
+        #print("<----Next safest move is----->")
+        #print(min_prob.ind)
+        return min_prob.ind, [] , []
     #print("<----the set obtained--->")
     #print(com_set)
     #print("<------num possivle combination---->")
